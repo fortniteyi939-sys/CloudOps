@@ -2,6 +2,7 @@ import {
   Server, 
   Globe, 
   DollarSign, 
+  Calendar,
   ShieldCheck, 
   Layers, 
   Activity,
@@ -52,42 +53,57 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Grid de Métricas Principales */}
+      {/* Grid de las 7 Tarjetas Obligatorias */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* 1. Servicios utilizados */}
         <StatCard
           title="Servicios en Uso"
           value={servicesInUse}
           description="Seleccionados en la propuesta activa"
           icon={Server}
         />
+
+        {/* 2. Región seleccionada */}
         <StatCard
           title="Región Principal"
           value={selectedRegion}
           description="Ubicación primaria de despliegue"
           icon={Globe}
         />
+
+        {/* 3. Costo mensual estimado */}
         <StatCard
           title="Costo Mensual Estimado"
           value={`$${monthlyCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-          description={`Anualizado: ~$${annualCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+          description="Calculado sobre 730h/mes"
           icon={DollarSign}
         />
+
+        {/* 4. Costo anual estimado */}
+        <StatCard
+          title="Costo Anual Estimado"
+          value={`$${annualCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+          description="Proyección a 12 meses"
+          icon={Calendar}
+        />
+
+        {/* 5. Estado de seguridad */}
         <StatCard
           title="Puntaje de Seguridad"
           value={`${securityScore}%`}
           description="Cumplimiento de mejores prácticas"
           icon={ShieldCheck}
         />
-      </div>
 
-      {/* Grid Secundario */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* 6. Recursos Cloud */}
         <StatCard
           title="Recursos Activos"
           value={cloudResources}
-          description="Servidores y servicios operativos en el catálogo"
+          description="Servidores y servicios en el catálogo"
           icon={Layers}
         />
+
+        {/* 7. Estado de la arquitectura */}
         <StatCard
           title="Estado de la Arquitectura"
           value={architectureStatus === "active" ? "Operativo" : "En Revisión"}
