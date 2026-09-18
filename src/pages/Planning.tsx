@@ -14,12 +14,11 @@ export default function Planning() {
   const [applicationType, setApplicationType] = useState("Web");
   const [description, setDescription] = useState("");
   const [region, setRegion] = useState("us-east-1");
-  const [estimatedUsers, setEstimatedUsers] = useState(1000);
+  const [estimatedUsers, setEstimatedUsers] = useState<number>(1000);
   const [availabilityLevel, setAvailabilityLevel] = useState("Alta (99.95%)");
   const [migrationGoal, setMigrationGoal] = useState("Escalabilidad");
   const [selectedServices, setSelectedServices] = useState<string[]>(["ec2", "s3"]);
 
-  // Alternar selección de servicios
   const toggleService = (serviceId: string) => {
     setSelectedServices((prev) =>
       prev.includes(serviceId)
@@ -28,7 +27,6 @@ export default function Planning() {
     );
   };
 
-  // Enviar el formulario
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -50,7 +48,6 @@ export default function Planning() {
     setProposals([newProposal, ...proposals]);
     setFormSubmitted(true);
 
-    // Limpiar formulario básico
     setSolutionName("");
     setDescription("");
     setTimeout(() => setFormSubmitted(false), 3000);
@@ -58,7 +55,6 @@ export default function Planning() {
 
   return (
     <div className="space-y-8">
-      {/* Encabezado */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
           Planificación de Arquitectura
@@ -69,7 +65,6 @@ export default function Planning() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Formulario de Creación (2 Columnas en escritorio) */}
         <div className="lg:col-span-2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-blue-600" />
@@ -133,6 +128,44 @@ export default function Planning() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Usuarios Estimados
+                </label>
+                <input
+                  type="number"
+                  value={estimatedUsers}
+                  onChange={(e) => setEstimatedUsers(Number(e.target.value))}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Disponibilidad
+                </label>
+                <input
+                  type="text"
+                  value={availabilityLevel}
+                  onChange={(e) => setAvailabilityLevel(e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Objetivo
+                </label>
+                <input
+                  type="text"
+                  value={migrationGoal}
+                  onChange={(e) => setMigrationGoal(e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Descripción del Proyecto
@@ -146,7 +179,6 @@ export default function Planning() {
               />
             </div>
 
-            {/* Selección de Servicios AWS */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Servicios Requeridos
@@ -182,7 +214,6 @@ export default function Planning() {
           </form>
         </div>
 
-        {/* Lista de Propuestas Registradas (1 Columna) */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Propuestas Guardadas
