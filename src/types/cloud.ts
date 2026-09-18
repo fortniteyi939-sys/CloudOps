@@ -4,7 +4,7 @@
 // Network, Services) consume estos tipos en vez de redefinirlos.
 // ============================================================
 
-export type ServiceStatus = "active" | "inactive" | "warning";
+export type ServiceStatus = "active" | "warning" | "inactive" | "maintenance";
 
 export type IndicatorLevel = "success" | "warning" | "danger";
 
