@@ -32,18 +32,18 @@ export default function Planning() {
 
     if (!solutionName.trim()) return;
 
-    const newProposal: CloudProposal = {
-      id: `prop-${Date.now()}`,
-      solutionName,
-      applicationType,
-      description,
-      region,
-      estimatedUsers: Number(estimatedUsers),
-      availabilityLevel,
-      migrationGoal,
-      selectedServices,
-      createdAt: new Date().toISOString(),
-    };
+   const newProposal: CloudProposal = {
+  id: `prop-${Date.now()}`,
+  solutionName,
+  applicationType: applicationType as CloudProposal["applicationType"],
+  description,
+  region,
+  estimatedUsers: Number(estimatedUsers),
+  availabilityLevel: availabilityLevel as CloudProposal["availabilityLevel"],
+  migrationGoal: migrationGoal as CloudProposal["migrationGoal"],
+  selectedServices,
+  createdAt: new Date().toISOString(),
+   };
 
     setProposals([newProposal, ...proposals]);
     setFormSubmitted(true);
