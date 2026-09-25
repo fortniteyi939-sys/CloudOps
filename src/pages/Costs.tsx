@@ -21,7 +21,7 @@ interface CostCalculatorItem {
   hours: number;
 }
 
-const COLORS = ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#a855f7", "#ec4899"];
+const COLORS = ["#2563EB", "#16A34A", "#F59E0B", "#DC2626", "#1D4ED8", "#64748B"];
 
 export default function Costs() {
   const [items, setItems] = useState<CostCalculatorItem[]>([
@@ -75,16 +75,6 @@ export default function Costs() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Gestión de Costos y Estimación Simulada
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Simulador de tarifas e infraestructura AWS con cálculo en tiempo real.
-        </p>
-      </div>
-
       {/* Tarjetas de Resumen Global */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
@@ -108,17 +98,17 @@ export default function Costs() {
       </div>
 
       {/* Gráfico de Distribución de Costos */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <PieIcon className="w-5 h-5 text-blue-600" />
+      <div className="bg-card p-6 rounded-card border border-cardBorder/30 shadow-elevated space-y-4">
+        <h2 className="text-lg font-semibold text-textPrimary flex items-center gap-2">
+          <PieIcon className="w-5 h-5 text-primary" />
           Distribución de Costos Simulados por Servicio (USD/mes)
         </h2>
         <div className="h-64 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={calculatedItems}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-              <XAxis dataKey="serviceName" stroke="#888888" fontSize={12} />
-              <YAxis stroke="#888888" fontSize={12} unit="$" />
+              <XAxis dataKey="serviceName" stroke="#64748B" fontSize={12} />
+              <YAxis stroke="#64748B" fontSize={12} unit="$" />
               <Tooltip formatter={(value: number) => [`$${value.toFixed(2)} USD`, "Costo Mensual"]} />
               <Bar dataKey="monthlyCost" radius={[6, 6, 0, 0]}>
                 {calculatedItems.map((_, index) => (
@@ -131,17 +121,17 @@ export default function Costs() {
       </div>
 
       {/* Calculadora Interactiva de Estimación */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+      <div className="bg-card rounded-card border border-cardBorder/30 shadow-elevated overflow-hidden">
+        <div className="p-6 border-b border-borderColor flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calculator className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Calculator className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-textPrimary">
               Estimación de Costos Simulada
             </h2>
           </div>
           <button
             onClick={handleAddItem}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             Agregar Servicio
@@ -149,8 +139,8 @@ export default function Costs() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
-            <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase text-gray-500 dark:text-gray-400">
+          <table className="w-full text-left text-sm text-textSecondary">
+            <thead className="bg-background text-xs uppercase text-textSecondary">
               <tr>
                 <th className="px-6 py-3">Selección del Servicio</th>
                 <th className="px-6 py-3 text-center">Cantidad</th>
@@ -161,14 +151,14 @@ export default function Costs() {
                 <th className="px-6 py-3 text-center">Acción</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="divide-y divide-borderColor">
               {calculatedItems.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30">
+                <tr key={item.id} className="hover:bg-background/50">
                   <td className="px-6 py-4">
                     <select
                       value={item.serviceId}
                       onChange={(e) => handleUpdateItem(item.id, "serviceId", e.target.value)}
-                      className="w-full max-w-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full max-w-xs bg-background border border-borderColor text-textPrimary text-sm rounded-lg p-2 focus:ring-2 focus:ring-primary"
                     >
                       {awsServices.map((service) => (
                         <option key={service.id} value={service.id}>
@@ -185,7 +175,7 @@ export default function Costs() {
                       onChange={(e) =>
                         handleUpdateItem(item.id, "quantity", Math.max(1, parseInt(e.target.value) || 1))
                       }
-                      className="w-20 text-center bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-20 text-center bg-background border border-borderColor text-textPrimary text-sm rounded-lg p-2 focus:ring-2 focus:ring-primary"
                     />
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -197,23 +187,23 @@ export default function Costs() {
                       onChange={(e) =>
                         handleUpdateItem(item.id, "hours", Math.max(1, parseInt(e.target.value) || 1))
                       }
-                      className="w-24 text-center bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-24 text-center bg-background border border-borderColor text-textPrimary text-sm rounded-lg p-2 focus:ring-2 focus:ring-primary"
                     />
                   </td>
-                  <td className="px-6 py-4 text-right font-medium text-gray-700 dark:text-gray-300">
+                  <td className="px-6 py-4 text-right font-medium text-textPrimary">
                     ${item.estimatedUnitCost.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 text-right font-semibold text-blue-600 dark:text-blue-400">
+                  <td className="px-6 py-4 text-right font-semibold text-primary">
                     ${item.monthlyCost.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 text-right font-semibold text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 text-right font-semibold text-textPrimary">
                     ${item.annualCost.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button
                       onClick={() => handleRemoveItem(item.id)}
                       disabled={items.length === 1}
-                      className="p-1.5 text-gray-400 hover:text-red-500 disabled:opacity-30 rounded-lg transition-colors"
+                      className="p-1.5 text-textSecondary hover:text-alert disabled:opacity-30 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

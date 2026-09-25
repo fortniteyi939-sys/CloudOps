@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { Globe, CheckCircle2, MapPin, Server, Activity, Plus, Trash2, Search, X } from "lucide-react";
+import { ComposableMap, Geographies, Geography, Marker, Line } from "react-simple-maps";
 import StatCard from "@/components/StatCard";
+
+// Topojson público (Natural Earth, dominio público) con las fronteras de
+// todos los países, servido vía CDN por el paquete "world-atlas".
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface AwsRegionData {
   id: string;
   code: string;
   name: string;
   location: string;
-  x: number; // Porcentaje X en el mapa (0 - 100)
-  y: number; // Porcentaje Y en el mapa (0 - 100)
+  latitude: number;
+  longitude: number;
   status: "Operativo" | "Mantenimiento" | "Degradado";
   services: string[];
 }
@@ -19,8 +24,8 @@ const initialRegions: AwsRegionData[] = [
     code: "us-east-1",
     name: "US East (N. Virginia)",
     location: "Virginia, EE. UU.",
-    x: 27,
-    y: 38,
+    latitude: 38.13,
+    longitude: -78.45,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "Lambda", "DynamoDB", "CloudFront"],
   },
@@ -29,8 +34,8 @@ const initialRegions: AwsRegionData[] = [
     code: "us-west-2",
     name: "US West (Oregon)",
     location: "Oregon, EE. UU.",
-    x: 18,
-    y: 32,
+    latitude: 45.84,
+    longitude: -119.7,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "Lambda", "ECS"],
   },
@@ -39,8 +44,8 @@ const initialRegions: AwsRegionData[] = [
     code: "sa-east-1",
     name: "South America (São Paulo)",
     location: "São Paulo, Brasil",
-    x: 35,
-    y: 68,
+    latitude: -23.55,
+    longitude: -46.63,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "EBS"],
   },
@@ -49,8 +54,8 @@ const initialRegions: AwsRegionData[] = [
     code: "eu-west-1",
     name: "Europe (Ireland)",
     location: "Dublín, Irlanda",
-    x: 47,
-    y: 28,
+    latitude: 53.41,
+    longitude: -8.24,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "Lambda", "API Gateway"],
   },
@@ -59,8 +64,8 @@ const initialRegions: AwsRegionData[] = [
     code: "eu-central-1",
     name: "Europe (Frankfurt)",
     location: "Fráncfort, Alemania",
-    x: 52,
-    y: 30,
+    latitude: 50.11,
+    longitude: 8.68,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "EKS", "DynamoDB"],
   },
@@ -69,8 +74,8 @@ const initialRegions: AwsRegionData[] = [
     code: "ap-northeast-1",
     name: "Asia Pacific (Tokyo)",
     location: "Tokio, Japón",
-    x: 84,
-    y: 38,
+    latitude: 35.68,
+    longitude: 139.69,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "Lambda", "EKS", "CloudFront"],
   },
@@ -79,8 +84,8 @@ const initialRegions: AwsRegionData[] = [
     code: "ap-southeast-1",
     name: "Asia Pacific (Singapore)",
     location: "Singapur",
-    x: 76,
-    y: 56,
+    latitude: 1.35,
+    longitude: 103.82,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "ECS"],
   },
@@ -89,8 +94,8 @@ const initialRegions: AwsRegionData[] = [
     code: "ap-southeast-2",
     name: "Asia Pacific (Sydney)",
     location: "Sídney, Australia",
-    x: 87,
-    y: 76,
+    latitude: -33.87,
+    longitude: 151.21,
     status: "Operativo",
     services: ["EC2", "S3", "RDS", "Lambda"],
   },
@@ -107,8 +112,8 @@ export default function Infrastructure() {
     code: "",
     name: "",
     location: "",
-    x: 50,
-    y: 50,
+    latitude: 0,
+    longitude: 0,
     status: "Operativo" as const,
     services: "EC2, S3, RDS",
   });
@@ -133,8 +138,8 @@ export default function Infrastructure() {
       code: newRegion.code,
       name: newRegion.name,
       location: newRegion.location || "Ubicación Global",
-      x: Number(newRegion.x),
-      y: Number(newRegion.y),
+      latitude: Number(newRegion.latitude),
+      longitude: Number(newRegion.longitude),
       status: newRegion.status,
       services: newRegion.services.split(",").map((s) => s.trim()).filter(Boolean),
     };
@@ -146,8 +151,8 @@ export default function Infrastructure() {
       code: "",
       name: "",
       location: "",
-      x: 50,
-      y: 50,
+      latitude: 0,
+      longitude: 0,
       status: "Operativo",
       services: "EC2, S3, RDS",
     });
@@ -163,19 +168,9 @@ export default function Infrastructure() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Encabezado */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Infraestructura Global de AWS
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Gestión dinámica de regiones, buscador, representación en mapa y detalle de servicios.
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-6 lg:h-full lg:min-h-0">
       {/* Tarjetas de Resumen */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="shrink-0 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           title="Regiones Activas"
           value={regions.length}
@@ -196,108 +191,162 @@ export default function Infrastructure() {
         />
       </div>
 
-      {/* Barra de Herramientas: Búsqueda y Botón Agregar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Filtrar región por nombre, código o país..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
+      {/* Mapa (izquierda) + Buscador/Lista de regiones (derecha). En desktop
+          (lg) esta fila queda acotada a la altura restante de la página
+          (lg:flex-1 lg:min-h-0) para que la página NUNCA scrollee: el mapa
+          crece/decrece con esa altura (aspect-auto + flex-1) y la card de
+          regiones, al tener una altura fija, hace su propio scroll interno
+          (overflow-y-auto en la lista) en vez de empujar el resto del layout
+          hacia abajo. En mobile las columnas se apilan y cada una toma su
+          alto natural. */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:flex-1 lg:min-h-0 lg:items-stretch">
+        {/* Mapa Mundial Interactivo: aspect-ratio fija en mobile (compacto),
+            pero en desktop se estira (flex-1) para igualar la altura de la
+            card de regiones de al lado. */}
+        <div className="lg:col-span-2 bg-card p-6 rounded-card border border-cardBorder/30 shadow-elevated flex flex-col gap-4 lg:h-full lg:min-h-0">
+          <h2 className="shrink-0 text-lg font-semibold text-textPrimary flex items-center gap-2">
+            <Globe className="w-5 h-5 text-primary" />
+            Mapa de Nodos de Monitoreo
+          </h2>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Agregar Región
-        </button>
-      </div>
+          <div className="relative w-full aspect-[2/1] lg:aspect-auto lg:flex-1 lg:min-h-0 rounded-card overflow-hidden border border-slate-800 bg-[radial-gradient(ellipse_at_30%_35%,#1D4ED8_0%,#0F172A_55%,#020617_100%)]">
+            <ComposableMap
+              projectionConfig={{ scale: 148, center: [10, 12] }}
+              style={{ width: "100%", height: "100%" }}
+            >
+              {/* Países reales (fronteras de Natural Earth) con relleno azul y
+                  ligero resplandor, para imitar el estilo del mapa de referencia */}
+              <Geographies geography={geoUrl}>
+                {({ geographies }) =>
+                  geographies.map((geo) => (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill="#3B82F6"
+                      fillOpacity={0.55}
+                      stroke="#93C5FD"
+                      strokeOpacity={0.5}
+                      strokeWidth={0.4}
+                      style={{
+                        default: { outline: "none" },
+                        hover: { outline: "none", fillOpacity: 0.75 },
+                        pressed: { outline: "none" },
+                      }}
+                    />
+                  ))
+                }
+              </Geographies>
 
-      {/* Mapa Mundial Interactivo */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Globe className="w-5 h-5 text-blue-600" />
-          Mapa de Nodos de Monitoreo
-        </h2>
-
-        <div className="relative w-full aspect-[2/1] bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
-          <svg className="w-full h-full text-slate-700 fill-current opacity-60" viewBox="0 0 1000 500">
-            <defs>
-              <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="1000" height="500" fill="url(#grid)" />
-            <path d="M 100,80 Q 200,60 300,90 Q 380,130 320,220 Q 220,240 140,180 Z" />
-            <path d="M 280,260 Q 370,250 390,340 Q 360,450 290,440 Q 260,350 280,260 Z" />
-            <path d="M 460,80 Q 560,70 580,150 Q 500,180 450,140 Z" />
-            <path d="M 450,190 Q 580,180 590,290 Q 540,390 470,360 Q 430,270 450,190 Z" />
-            <path d="M 590,70 Q 850,50 920,160 Q 880,260 740,250 Q 600,200 590,70 Z" />
-            <path d="M 780,320 Q 900,310 910,410 Q 820,430 780,320 Z" />
-          </svg>
-
-          {filteredRegions.map((reg) => {
-            const isSelected = selectedRegion?.id === reg.id;
-            return (
-              <button
-                key={reg.id}
-                onClick={() => setSelectedRegionId(reg.id)}
-                style={{ left: `${reg.x}%`, top: `${reg.y}%` }}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 group focus:outline-none z-10"
-              >
-                <span
-                  className={`relative block w-4 h-4 rounded-full border-2 transition-all duration-200 ${
-                    isSelected
-                      ? "bg-blue-500 border-white ring-4 ring-blue-500/40 scale-125"
-                      : "bg-emerald-500 border-slate-900 group-hover:scale-125"
-                  }`}
+              {/* Líneas de conexión entre regiones filtradas */}
+              {filteredRegions.slice(1).map((reg, i) => (
+                <Line
+                  key={reg.id}
+                  from={[filteredRegions[i].longitude, filteredRegions[i].latitude]}
+                  to={[reg.longitude, reg.latitude]}
+                  stroke="#3B82F6"
+                  strokeWidth={1.2}
+                  strokeOpacity={0.5}
+                  strokeDasharray="4 4"
                 />
-                <span className="absolute left-1/2 -translate-x-1/2 top-5 px-2 py-0.5 text-[10px] font-semibold text-white bg-slate-950/90 rounded border border-slate-700 whitespace-nowrap shadow-md">
-                  {reg.code}
-                </span>
-              </button>
-            );
-          })}
+              ))}
+
+              {/* Pines de las regiones */}
+              {filteredRegions.map((reg) => {
+                const isSelected = selectedRegion?.id === reg.id;
+                return (
+                  <Marker
+                    key={reg.id}
+                    coordinates={[reg.longitude, reg.latitude]}
+                    onClick={() => setSelectedRegionId(reg.id)}
+                    style={{ default: { cursor: "pointer" } }}
+                  >
+                    <circle
+                      r={isSelected ? 7 : 5.5}
+                      fill={isSelected ? "#2563EB" : "#16A34A"}
+                      stroke={isSelected ? "#FFFFFF" : "#0F172A"}
+                      strokeWidth={2}
+                    />
+                    <text
+                      textAnchor="middle"
+                      y={-12}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        fill: "#FFFFFF",
+                        paintOrder: "stroke",
+                        stroke: "#020617",
+                        strokeWidth: 3,
+                      }}
+                    >
+                      {reg.code}
+                    </text>
+                  </Marker>
+                );
+              })}
+            </ComposableMap>
+          </div>
         </div>
-      </div>
 
-      {/* Lista Detallada de Todas las Regiones con Acción para Eliminar */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden space-y-4 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Todas las Regiones Monitoreadas ({filteredRegions.length})
-        </h2>
+        {/* Columna derecha: una sola card (búsqueda + botón fijos arriba, lista con
+            scroll interno abajo), estirada (items-stretch) a la misma altura que
+            la tarjeta del mapa. Así nunca hay que desplazar la página completa. */}
+        <div className="lg:col-span-1 bg-card rounded-card border border-cardBorder/30 shadow-elevated overflow-hidden flex flex-col lg:h-full lg:min-h-0">
+          {/* Encabezado fijo: título + búsqueda + botón agregar */}
+          <div className="shrink-0 flex flex-col gap-3 p-4 border-b border-borderColor">
+            <h2 className="text-lg font-semibold text-textPrimary">
+              Todas las Regiones Monitoreadas
+            </h2>
 
-        <div className="space-y-4">
-          {filteredRegions.map((reg) => {
+            <div className="relative w-full">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-textSecondary" />
+              <input
+                type="text"
+                placeholder="Filtrar región por nombre, código o país..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-background border border-borderColor rounded-lg text-sm text-textPrimary focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Agregar Región
+            </button>
+          </div>
+
+          {/* Lista Detallada de Todas las Regiones con Acción para Eliminar.
+              Ocupa el espacio restante de la card (flex-1 + min-h-0) y hace scroll
+              interno en vez de estirar la página más abajo del mapa. */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-4">
+            <div className="space-y-4">
+              {filteredRegions.map((reg) => {
             const isSelected = selectedRegion?.id === reg.id;
             return (
               <div
                 key={reg.id}
                 onClick={() => setSelectedRegionId(reg.id)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                className={`p-4 rounded-card border transition-all cursor-pointer ${
                   isSelected
-                    ? "border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-sm"
-                    : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300"
+                    ? "border-primary bg-primary/10 shadow-elevated"
+                    : "border-borderColor bg-card hover:border-borderColor"
                 }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 dark:border-gray-700/60 pb-3 gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-borderColor pb-3 gap-2">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+                    <MapPin className="w-5 h-5 text-primary" />
                     <div>
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-base font-bold text-textPrimary">
                         {reg.name}
                       </h3>
-                      <p className="text-xs text-gray-400 font-mono">{reg.code}</p>
+                      <p className="text-xs text-textSecondary font-mono">{reg.code}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-security/10 text-security border border-security/20">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-security" />
                       Estado: {reg.status}
                     </span>
                     <button
@@ -306,7 +355,7 @@ export default function Infrastructure() {
                         handleDeleteRegion(reg.id);
                       }}
                       disabled={regions.length === 1}
-                      className="p-1.5 text-gray-400 hover:text-red-500 disabled:opacity-30 rounded-lg transition-colors"
+                      className="p-1.5 text-textSecondary hover:text-alert disabled:opacity-30 rounded-lg transition-colors"
                       title="Eliminar región"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -316,26 +365,26 @@ export default function Infrastructure() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3">
                   <div>
-                    <span className="text-[11px] uppercase font-semibold text-gray-400 block mb-1">
+                    <span className="text-[11px] uppercase font-semibold text-textSecondary block mb-1">
                       Ubicación Física
                     </span>
-                    <div className="flex items-center gap-2 text-xs font-medium text-gray-700 dark:text-gray-200">
-                      <Globe className="w-3.5 h-3.5 text-blue-500" />
+                    <div className="flex items-center gap-2 text-xs font-medium text-textPrimary">
+                      <Globe className="w-3.5 h-3.5 text-primary" />
                       {reg.location}
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-[11px] uppercase font-semibold text-gray-400 block mb-1">
+                    <span className="text-[11px] uppercase font-semibold text-textSecondary block mb-1">
                       Servicios Desplegados
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {reg.services.map((service) => (
                         <span
                           key={service}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-100 dark:border-blue-800"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-primary/10 text-primary border border-primary/20"
                         >
-                          <Server className="w-3 h-3 text-blue-500" />
+                          <Server className="w-3 h-3 text-primary" />
                           {service}
                         </span>
                       ))}
@@ -343,27 +392,29 @@ export default function Infrastructure() {
                   </div>
                 </div>
               </div>
-            );
-          })}
+              );
+            })}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Modal para Agregar Nueva Región */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="bg-card rounded-card max-w-md w-full p-6 space-y-4 shadow-xl border border-cardBorder/30">
+            <div className="flex items-center justify-between border-b border-borderColor pb-3">
+              <h3 className="text-lg font-semibold text-textPrimary">
                 Agregar Región de Monitoreo
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-textSecondary hover:text-textSecondary">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAddRegion} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-textPrimary mb-1">
                   Código (ej: us-central-1)
                 </label>
                 <input
@@ -371,12 +422,12 @@ export default function Infrastructure() {
                   required
                   value={newRegion.code}
                   onChange={(e) => setNewRegion({ ...newRegion, code: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white"
+                  className="w-full bg-background border border-borderColor rounded-lg p-2 text-sm text-textPrimary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-textPrimary mb-1">
                   Nombre de la Región
                 </label>
                 <input
@@ -384,45 +435,45 @@ export default function Infrastructure() {
                   required
                   value={newRegion.name}
                   onChange={(e) => setNewRegion({ ...newRegion, name: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white"
+                  className="w-full bg-background border border-borderColor rounded-lg p-2 text-sm text-textPrimary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-textPrimary mb-1">
                   Ubicación Física
                 </label>
                 <input
                   type="text"
                   value={newRegion.location}
                   onChange={(e) => setNewRegion({ ...newRegion, location: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white"
+                  className="w-full bg-background border border-borderColor rounded-lg p-2 text-sm text-textPrimary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-textPrimary mb-1">
                   Servicios (separados por coma)
                 </label>
                 <input
                   type="text"
                   value={newRegion.services}
                   onChange={(e) => setNewRegion({ ...newRegion, services: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white"
+                  className="w-full bg-background border border-borderColor rounded-lg p-2 text-sm text-textPrimary"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex justify-end gap-2 pt-3 border-t border-borderColor">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                  className="px-4 py-2 text-xs font-medium text-textSecondary bg-background hover:bg-borderColor rounded-lg"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+                  className="px-4 py-2 text-xs font-medium text-white bg-primary hover:bg-primary-dark rounded-lg"
                 >
                   Guardar Región
                 </button>

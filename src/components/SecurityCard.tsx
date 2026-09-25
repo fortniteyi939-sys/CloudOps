@@ -7,7 +7,7 @@ interface SecurityCardProps {
 
 export default function SecurityCard({ indicator }: SecurityCardProps) {
   return (
-    <div className="bg-card rounded-card shadow-card border border-borderColor p-5">
+    <div className="bg-card rounded-card shadow-elevated border border-cardBorder/30 p-5">
       <div className="flex items-start justify-between mb-2">
         <p className="text-caption text-textSecondary">{indicator.category}</p>
         <StatusBadge status={indicator.level} />

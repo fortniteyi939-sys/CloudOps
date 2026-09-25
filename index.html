@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Evita que navegadores (Chrome/Edge Android, "Forzar modo oscuro" en Windows)
+         inviertan automáticamente los colores del sitio. Sin esto, algunos navegadores
+         aplican su propia heurística de "dark mode" y oscurecen fondos/tarjetas blancas,
+         tiñendo íconos con colores incorrectos, aunque la app siempre usa tema claro. -->
+    <meta name="color-scheme" content="light only" />
     <title>CloudOps Dashboard</title>
   </head>
   <body>

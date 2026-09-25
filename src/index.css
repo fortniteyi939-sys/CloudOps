@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  /* Refuerza a nivel CSS que la app es solo tema claro, además del meta
+     "color-scheme" en index.html. Evita que el navegador aplique su propio
+     oscurecimiento automático (fondos negros, íconos con tintes incorrectos). */
+  :root {
+    color-scheme: light only;
+  }
+
   body {
     @apply bg-background text-textPrimary antialiased;
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;

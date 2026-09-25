@@ -8,7 +8,7 @@ interface CostCardProps {
 
 export default function CostCard({ estimate, serviceName }: CostCardProps) {
   return (
-    <div className="bg-card rounded-card shadow-card border border-borderColor p-5">
+    <div className="bg-card rounded-card shadow-elevated border border-cardBorder/30 p-5">
       <div className="flex items-center gap-2 mb-3">
         <DollarSign size={16} className="text-cost" />
         <h3 className="text-body font-semibold text-textPrimary">{serviceName}</h3>

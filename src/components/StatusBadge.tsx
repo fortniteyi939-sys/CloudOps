@@ -9,6 +9,7 @@ const statusStyles: Record<string, string> = {
   active: "bg-security/10 text-security",
   success: "bg-security/10 text-security",
   warning: "bg-cost/10 text-cost",
+  maintenance: "bg-cost/10 text-cost",
   inactive: "bg-alert/10 text-alert",
   danger: "bg-alert/10 text-alert",
 };
@@ -17,6 +18,7 @@ const statusLabels: Record<string, string> = {
   active: "Activo",
   success: "Correcto",
   warning: "Requiere revisión",
+  maintenance: "Mantenimiento",
   inactive: "Inactivo",
   danger: "Problema",
 };
